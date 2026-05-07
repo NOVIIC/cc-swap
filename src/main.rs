@@ -1,4 +1,4 @@
-#![windows_subsystem = "windows"]
+#![cfg_attr(target_os = "windows", windows_subsystem = "windows")]
 
 slint::include_modules!();
 
@@ -24,8 +24,12 @@ fn settings_dir() -> PathBuf {
 }
 
 fn default_claude_dir() -> PathBuf {
-    std::env::var_os("USERPROFILE")
-        .map(PathBuf::from)
+    let home = if cfg!(windows) {
+        std::env::var_os("USERPROFILE")
+    } else {
+        std::env::var_os("HOME")
+    };
+    home.map(PathBuf::from)
         .unwrap_or_else(|| PathBuf::from("."))
         .join(".claude")
 }
