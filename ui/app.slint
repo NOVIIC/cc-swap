@@ -1,0 +1,58 @@
+import { Button, VerticalBox, ScrollView } from "std-widgets.slint";
+
+export component AppWindow inherits Window {
+    title: "CC Fast Switch";
+    preferred-width: 360px;
+    preferred-height: 480px;
+    min-width: 280px;
+    min-height: 200px;
+
+    in property <[string]> profiles;
+    in property <string> target-path;
+    in-out property <string> status;
+
+    callback profile-clicked(int);
+
+    VerticalBox {
+        padding: 12px;
+        spacing: 8px;
+
+        Text {
+            text: "目标: " + root.target-path;
+            font-size: 11px;
+            color: #888888;
+            wrap: word-wrap;
+        }
+
+        Rectangle {
+            background: #dddddd;
+            height: 1px;
+        }
+
+        ScrollView {
+            VerticalLayout {
+                spacing: 6px;
+                alignment: start;
+
+                if root.profiles.length == 0 : Text {
+                    text: "请把配置文件放进 settings/ 文件夹";
+                    horizontal-alignment: center;
+                    color: #888888;
+                    wrap: word-wrap;
+                }
+
+                for name[idx] in root.profiles : Button {
+                    text: name;
+                    clicked => { root.profile-clicked(idx); }
+                }
+            }
+        }
+
+        Text {
+            text: root.status;
+            horizontal-alignment: center;
+            color: #22aa77;
+            wrap: word-wrap;
+        }
+    }
+}
