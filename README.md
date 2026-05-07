@@ -15,30 +15,42 @@ Claude Code 的 `settings.json` 秒切工具。原生 Rust + Slint，无 Web 套
 
 ### 1. 安装
 
-到 Releases 页下载 `cc-swap.exe`，放到你喜欢的目录，例如 `D:\Tools\cc-swap\`。
+到 [Releases](../../releases) 页下载对应平台的二进制：
+
+- **Windows**: `cc-swap.exe`
+- **Linux**: `cc-swap`
+
+放到你喜欢的目录，例如 `~/tools/cc-swap/`。
 
 或者自己构建（需要 Rust 1.85+，edition 2024）：
 
 ```bash
 cargo build --release
-# 产物：target/release/cc-swap.exe
+# 产物：target/release/cc-swap (Linux) 或 cc-swap.exe (Windows)
+```
+
+Linux 构建前需安装系统依赖：
+
+```bash
+# Debian / Ubuntu
+sudo apt install libgtk-3-dev libx11-dev libxkbcommon-dev
 ```
 
 ### 2. 首次运行
 
-双击 exe，会弹出原生文件对话框，让你指定 Claude Code 的 `settings.json` 在哪。默认目录是 `%USERPROFILE%\.claude\`。
+双击运行，会弹出原生文件对话框，让你指定 Claude Code 的 `settings.json` 在哪。默认目录是 `~/.claude/`（即 `%USERPROFILE%\.claude\` 或 `$HOME/.claude/`）。
 
-选定后路径会写入 exe 同级的 `cc-swap.conf`，下次启动直接读取，不再询问。
+选定后路径会写入程序同级的 `cc-swap.conf`，下次启动直接读取，不再询问。
 
 ### 3. 准备配置文件
 
-在 exe 同级的 `settings/` 文件夹里放任意多份配置（程序首次运行时会自动建好这个文件夹），文件名随意：
+在程序同级的 `settings/` 文件夹里放任意多份配置（程序首次运行时会自动建好这个文件夹），文件名随意：
 
 ```
-D:\Tools\cc-swap\
-├── cc-swap.exe
+cc-swap/
+├── cc-swap(.exe)
 ├── cc-swap.conf
-└── settings\
+└── settings/
     ├── work.json
     ├── personal.json
     └── glm-coding-plan.json
@@ -46,13 +58,13 @@ D:\Tools\cc-swap\
 
 ### 4. 日常使用
 
-双击 exe → 看到每份配置对应一个按钮 → 点击 → 状态栏显示「已切换到 xxx」→ 窗口约 500 ms 后自动关闭。
+双击运行 → 看到每份配置对应一个按钮 → 点击 → 状态栏显示「已切换到 xxx」→ 窗口约 500 ms 后自动关闭。
 
 每次切换前，旧的目标 `settings.json` 会被复制为 `settings.json.bak`（与目标同目录，覆盖式保留最近一次，方便误操作时恢复）。
 
 ### 5. 重置 / 修改目标路径
 
-直接动 exe 同级的 `cc-swap.conf`：
+直接修改程序同级的 `cc-swap.conf`：
 
 - **删除**：下次启动会重新弹出文件对话框。
 - **编辑**：把里面那一行路径改成新的目标即可。
@@ -62,7 +74,7 @@ D:\Tools\cc-swap\
 ```
 启动
  ├─ 读取 cc-swap.conf
- │   ├─ 不存在 → 弹 Win32 原生文件框 → 写入 conf
+ │   ├─ 不存在 → 弹原生文件对话框 → 写入 conf
  │   └─ 存在   → 用里面的路径
  ├─ ensure settings/ 文件夹存在
  ├─ 扫描 settings/ 下所有文件（按文件名升序）
@@ -93,8 +105,8 @@ cc-swap/
 | 渲染后端 | Slint `renderer-software`，跳过 OpenGL 初始化 |
 | 二进制大小 | `opt-level = "z"` + `lto = true` + `codegen-units = 1` + `strip = true` |
 | 异常处理 | `panic = "abort"`，去 unwind 表 |
-| 控制台 | `#![windows_subsystem = "windows"]`，避免 console flash |
-| 文件对话框 | rfd 用 `common-controls-v6` feature，走 Win32 原生（不拉 GTK） |
+| 控制台 | `cfg_attr(windows, windows_subsystem = "windows")`，避免 Windows 上 console flash |
+| 文件对话框 | Windows 走 Win32 原生 (`common-controls-v6`)；Linux 走 GTK3 原生 |
 | 配置序列化 | 不引 serde，conf 是纯文本路径 |
 
 ## 边界情况
@@ -110,4 +122,4 @@ cc-swap/
 
 ## 平台
 
-主要面向 Windows 11。Slint 与 rfd 本身跨平台，理论上 Linux / macOS 也能跑，但未测试。
+支持 Windows 11 与 Linux（X11 / Wayland）。系统需安装 GTK3 运行时（`libgtk-3-0`），多数桌面发行版已自带。

@@ -6,20 +6,54 @@ on:
       - "v*"
 
 jobs:
-  release:
-    runs-on: windows-latest
-    permissions:
-      contents: write
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact: target/release/cc-swap
+            dep_cmd: sudo apt-get update && sudo apt-get install -y libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxkbcommon-dev libgtk-3-dev
+          - os: windows-latest
+            artifact: target/release/cc-swap.exe
+            dep_cmd: ""
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v6
       - uses: Swatinem/rust-cache@v2
 
+      - name: Install system deps
+        if: matrix.dep_cmd != ''
+        run: ${{ matrix.dep_cmd }}
+
       - name: Build release
         run: cargo build --release
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: cc-swap-${{ matrix.os }}
+          path: ${{ matrix.artifact }}
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v5
+
+      - name: Generate release notes
+        run: |
+          echo '## Downloads' > release_body.md
+          echo '- `cc-swap.exe` — Windows x64' >> release_body.md
+          echo '- `cc-swap` — Linux x64' >> release_body.md
 
       - name: Create release
         uses: softprops/action-gh-release@v3
         with:
-          files: target/release/cc-swap.exe
+          files: |
+            cc-swap-ubuntu-latest/cc-swap
+            cc-swap-windows-latest/cc-swap.exe
+          body_path: release_body.md
           generate_release_notes: true
           prerelease: ${{ contains(github.ref_name, 'a') || contains(github.ref_name, 'b') || contains(github.ref_name, 'pre') || contains(github.ref_name, 'rc') }}
