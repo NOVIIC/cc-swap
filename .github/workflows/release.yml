@@ -13,7 +13,7 @@ jobs:
           - os: ubuntu-latest
             artifact: target/release/cc-swap
             name: cc-swap-x86_64-linux
-            dep_cmd: sudo apt-get update && sudo apt-get install -y libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxkbcommon-dev
+            dep_cmd: sudo apt-get update && sudo apt-get install -y libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxkbcommon-dev libfontconfig1-dev
           - os: windows-latest
             artifact: target/release/cc-swap.exe
             name: cc-swap-x86_64-windows.exe
