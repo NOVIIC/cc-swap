@@ -34,20 +34,16 @@ fn default_claude_dir() -> PathBuf {
         .join(".claude")
 }
 
-fn load_or_pick_target() -> Option<PathBuf> {
+fn load_target() -> PathBuf {
     if let Ok(s) = std::fs::read_to_string(conf_path()) {
         let trimmed = s.trim();
         if !trimmed.is_empty() {
-            return Some(PathBuf::from(trimmed));
+            return PathBuf::from(trimmed);
         }
     }
-    let picked = rfd::FileDialog::new()
-        .set_title("选择 Claude Code 的 settings.json")
-        .set_directory(default_claude_dir())
-        .set_file_name("settings.json")
-        .save_file()?;
-    let _ = std::fs::write(conf_path(), picked.to_string_lossy().as_bytes());
-    Some(picked)
+    let default_target = default_claude_dir().join("settings.json");
+    let _ = std::fs::write(conf_path(), default_target.to_string_lossy().as_bytes());
+    default_target
 }
 
 fn scan_settings() -> Vec<PathBuf> {
@@ -82,10 +78,7 @@ fn switch_profile(target: &Path, src: &Path) -> std::io::Result<()> {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let target = match load_or_pick_target() {
-        Some(p) => p,
-        None => return Ok(()),
-    };
+    let target = load_target();
     std::fs::create_dir_all(settings_dir())?;
     let files = scan_settings();
     let names: Vec<SharedString> = files
@@ -99,7 +92,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .collect();
 
     let ui = AppWindow::new()?;
-    ui.set_target_path(target.to_string_lossy().to_string().into());
+    ui.set_target_path(target.display().to_string().into());
     ui.set_profiles(ModelRc::from(Rc::new(VecModel::from(names))));
 
     let ui_weak = ui.as_weak();

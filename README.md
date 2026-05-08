@@ -33,14 +33,12 @@ Linux 构建前需安装系统依赖：
 
 ```bash
 # Debian / Ubuntu
-sudo apt install libgtk-3-dev libx11-dev libxkbcommon-dev
+sudo apt install libx11-dev libxkbcommon-dev
 ```
 
 ### 2. 首次运行
 
-双击运行，会弹出原生文件对话框，让你指定 Claude Code 的 `settings.json` 在哪。默认目录是 `~/.claude/`（即 `%USERPROFILE%\.claude\` 或 `$HOME/.claude/`）。
-
-选定后路径会写入程序同级的 `cc-swap.conf`，下次启动直接读取，不再询问。
+双击运行，自动使用默认路径 `~/.claude/settings.json`（即 `%USERPROFILE%\.claude\settings.json` 或 `$HOME/.claude/settings.json`）作为目标配置，并写入程序同级的 `cc-swap.conf`，下次启动直接读取。
 
 ### 3. 准备配置文件
 
@@ -62,19 +60,16 @@ cc-swap/
 
 每次切换前，旧的目标 `settings.json` 会被复制为 `settings.json.bak`（与目标同目录，覆盖式保留最近一次，方便误操作时恢复）。
 
-### 5. 重置 / 修改目标路径
+### 5. 修改目标路径
 
-直接修改程序同级的 `cc-swap.conf`：
-
-- **删除**：下次启动会重新弹出文件对话框。
-- **编辑**：把里面那一行路径改成新的目标即可。
+需要换目标时，直接编辑程序同级的 `cc-swap.conf`，把里面那一行路径改成新的目标即可。
 
 ## 工作原理
 
 ```
 启动
  ├─ 读取 cc-swap.conf
- │   ├─ 不存在 → 弹原生文件对话框 → 写入 conf
+ │   ├─ 不存在 → 自动写入默认路径 (~/.claude/settings.json)
  │   └─ 存在   → 用里面的路径
  ├─ ensure settings/ 文件夹存在
  ├─ 扫描 settings/ 下所有文件（按文件名升序）
@@ -95,7 +90,7 @@ cc-swap/
 ├── ui/
 │   └── app.slint       # UI 定义
 └── src/
-    └── main.rs         # 全部 Rust 逻辑（~120 行）
+    └── main.rs         # 全部 Rust 逻辑
 ```
 
 ## 冷启动调优
@@ -106,7 +101,6 @@ cc-swap/
 | 二进制大小 | `opt-level = "z"` + `lto = true` + `codegen-units = 1` + `strip = true` |
 | 异常处理 | `panic = "abort"`，去 unwind 表 |
 | 控制台 | `cfg_attr(windows, windows_subsystem = "windows")`，避免 Windows 上 console flash |
-| 文件对话框 | Windows 走 Win32 原生 (`common-controls-v6`)；Linux 走 GTK3 原生 |
 | 配置序列化 | 不引 serde，conf 是纯文本路径 |
 
 ## 边界情况
@@ -116,10 +110,9 @@ cc-swap/
 | `settings/` 不存在 | 自动创建 |
 | `settings/` 为空 | UI 显示提示「请把配置文件放进 settings/ 文件夹」 |
 | 目标 `settings.json` 不存在（首次） | 跳过备份，直接写入 |
-| 首次启动取消文件选择 | 进程静默退出，不写 conf，下次再弹 |
 | 复制失败（权限/被占用） | 状态栏显示错误，窗口不关，可重试 |
 | `settings/` 含子目录 | 跳过，仅列文件 |
 
 ## 平台
 
-支持 Windows 11 与 Linux（X11 / Wayland）。系统需安装 GTK3 运行时（`libgtk-3-0`），多数桌面发行版已自带。
+支持 Windows 11 与 Linux（X11 / Wayland）。
