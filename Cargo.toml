@@ -1,6 +1,6 @@
 [package]
 name = "cc-swap"
-version = "1.0.0"
+version = "1.1.0"
 edition = "2024"
 
 [dependencies]
@@ -13,6 +13,9 @@ slint = { version = "1.8", default-features = false, features = [
 
 [build-dependencies]
 slint-build = "1.8"
+
+[target.'cfg(windows)'.build-dependencies]
+winresource = "0.1"
 
 [profile.release]
 opt-level = "z"
