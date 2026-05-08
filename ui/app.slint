@@ -1,7 +1,7 @@
 import { Button, VerticalBox, ScrollView } from "std-widgets.slint";
 
 export component AppWindow inherits Window {
-    title: "CC Fast Switch";
+    title: "cc swap";
     preferred-width: 360px;
     preferred-height: 480px;
     min-width: 280px;
@@ -9,6 +9,7 @@ export component AppWindow inherits Window {
 
     in property <[string]> profiles;
     in property <string> target-path;
+    in property <string> version;
     in-out property <string> status;
 
     callback profile-clicked(int);
@@ -53,6 +54,13 @@ export component AppWindow inherits Window {
             horizontal-alignment: center;
             color: #22aa77;
             wrap: word-wrap;
+        }
+
+        Text {
+            text: "v" + root.version;
+            horizontal-alignment: center;
+            font-size: 10px;
+            color: #aaaaaa;
         }
     }
 }

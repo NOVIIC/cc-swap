@@ -93,6 +93,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let ui = AppWindow::new()?;
     ui.set_target_path(target.display().to_string().into());
+    ui.set_version(env!("CARGO_PKG_VERSION").into());
     ui.set_profiles(ModelRc::from(Rc::new(VecModel::from(names))));
 
     let ui_weak = ui.as_weak();

@@ -12,11 +12,13 @@ jobs:
         include:
           - os: ubuntu-latest
             artifact: target/release/cc-swap
-            name: cc-swap-x86_64-linux
+            arch: x86_64-linux
+            ext: ""
             dep_cmd: sudo apt-get update && sudo apt-get install -y libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxkbcommon-dev libfontconfig1-dev
           - os: windows-latest
             artifact: target/release/cc-swap.exe
-            name: cc-swap-x86_64-windows.exe
+            arch: x86_64-windows
+            ext: .exe
             dep_cmd: ""
     runs-on: ${{ matrix.os }}
     steps:
@@ -32,13 +34,13 @@ jobs:
 
       - name: Rename artifact
         shell: bash
-        run: mv ${{ matrix.artifact }} ${{ matrix.name }}
+        run: mv ${{ matrix.artifact }} cc-swap-${{ github.ref_name }}-${{ matrix.arch }}${{ matrix.ext }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v5
         with:
           name: cc-swap-${{ matrix.os }}
-          path: ${{ matrix.name }}
+          path: cc-swap-${{ github.ref_name }}-${{ matrix.arch }}${{ matrix.ext }}
 
   publish:
     needs: build
@@ -52,7 +54,7 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           files: |
-            cc-swap-ubuntu-latest/cc-swap-x86_64-linux
-            cc-swap-windows-latest/cc-swap-x86_64-windows.exe
+            cc-swap-ubuntu-latest/cc-swap-${{ github.ref_name }}-x86_64-linux
+            cc-swap-windows-latest/cc-swap-${{ github.ref_name }}-x86_64-windows.exe
           generate_release_notes: true
           prerelease: ${{ contains(github.ref_name, 'a') || contains(github.ref_name, 'b') || contains(github.ref_name, 'pre') || contains(github.ref_name, 'rc') }}
