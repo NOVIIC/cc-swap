@@ -10,11 +10,6 @@ slint = { version = "1.8", default-features = false, features = [
     "backend-winit",
     "renderer-software",
 ] }
-[target.'cfg(windows)'.dependencies]
-rfd = { version = "0.15", default-features = false, features = ["common-controls-v6"] }
-
-[target.'cfg(not(windows))'.dependencies]
-rfd = { version = "0.15" }
 
 [build-dependencies]
 slint-build = "1.8"
