@@ -33,7 +33,7 @@ Linux 构建前需安装系统依赖：
 
 ```bash
 # Debian / Ubuntu
-sudo apt install libx11-dev libxkbcommon-dev
+sudo apt install libx11-dev libxkbcommon-dev libfontconfig1-dev
 ```
 
 ### 2. 首次运行
