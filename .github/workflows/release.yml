@@ -12,9 +12,11 @@ jobs:
         include:
           - os: ubuntu-latest
             artifact: target/release/cc-swap
-            dep_cmd: sudo apt-get update && sudo apt-get install -y libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxkbcommon-dev libgtk-3-dev
+            name: cc-swap-x86_64-linux
+            dep_cmd: sudo apt-get update && sudo apt-get install -y libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxkbcommon-dev
           - os: windows-latest
             artifact: target/release/cc-swap.exe
+            name: cc-swap-x86_64-windows.exe
             dep_cmd: ""
     runs-on: ${{ matrix.os }}
     steps:
@@ -28,11 +30,15 @@ jobs:
       - name: Build release
         run: cargo build --release
 
+      - name: Rename artifact
+        shell: bash
+        run: mv ${{ matrix.artifact }} ${{ matrix.name }}
+
       - name: Upload artifact
         uses: actions/upload-artifact@v5
         with:
           name: cc-swap-${{ matrix.os }}
-          path: ${{ matrix.artifact }}
+          path: ${{ matrix.name }}
 
   publish:
     needs: build
@@ -42,18 +48,11 @@ jobs:
     steps:
       - uses: actions/download-artifact@v5
 
-      - name: Generate release notes
-        run: |
-          echo '## Downloads' > release_body.md
-          echo '- `cc-swap.exe` — Windows x64' >> release_body.md
-          echo '- `cc-swap` — Linux x64' >> release_body.md
-
       - name: Create release
         uses: softprops/action-gh-release@v3
         with:
           files: |
-            cc-swap-ubuntu-latest/cc-swap
-            cc-swap-windows-latest/cc-swap.exe
-          body_path: release_body.md
+            cc-swap-ubuntu-latest/cc-swap-x86_64-linux
+            cc-swap-windows-latest/cc-swap-x86_64-windows.exe
           generate_release_notes: true
           prerelease: ${{ contains(github.ref_name, 'a') || contains(github.ref_name, 'b') || contains(github.ref_name, 'pre') || contains(github.ref_name, 'rc') }}
