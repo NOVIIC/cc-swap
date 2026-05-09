@@ -2,38 +2,48 @@
 
 Claude Code 的 `settings.json` 秒切工具。原生 Rust + Slint，无 Web 套壳；用完即走，不驻后台。
 
-## 是什么
+## 使用场景
 
-如果你需要在多份 `settings.json` 之间反复切换（多账号 / 多 token / 多环境 / 多模型供应商），手工复制或写 PowerShell 脚本都不够轻巧。本工具的设计目标：
+如果你需要在多份 `settings.json` 之间反复切换（多账号 / 多 token / 多环境 / 多模型供应商），手工复制太麻烦，而 cc-switch 又不够轻巧。本工具的设计目标：
 
 - **秒开**：软渲染、零 GPU 初始化、单文件 ~4 MB。
-- **极简**：双击 → 一个按钮 → 切完自动关窗。
+- **极简**：按下按钮切换配置文件，切完自动关窗。
 - **不动态解析配置**：纯字节拷贝，不会破坏 JSON 里的注释或格式。
 - **替换前自动备份**：原文件落到同目录的 `settings.json.bak`。
 
 ## 使用
 
-### 1. 安装
+### 1. 获得二进制文件
+
+#### 使用预编译二进制文件
 
 到 [Releases](../../releases) 页下载对应平台的二进制：
 
-- **Windows**: `cc-swap.exe`
-- **Linux**: `cc-swap`
-
 放到你喜欢的目录，例如 `~/tools/cc-swap/`。
 
-或者自己构建（需要 Rust 1.85+，edition 2024）：
+> **WSL 用户**：WSL2 + WSLg（Windows 11 默认自带）可直接运行；WSL1 可能需要额外配置。
 
-```bash
-cargo build --release
-# 产物：target/release/cc-swap (Linux) 或 cc-swap.exe (Windows)
-```
 
-Linux 构建前需安装系统依赖：
+#### 自行构建
+
+需要 Rust 1.85+（edition 2024）：
 
 ```bash
 # Debian / Ubuntu
 sudo apt install libx11-dev libxkbcommon-dev libfontconfig1-dev
+cargo build --release
+```
+
+```bash
+# Fedora / RHEL
+sudo dnf install libX11-devel libxkbcommon-devel fontconfig-devel
+cargo build --release
+```
+
+```bash
+# Arch
+sudo pacman -S libx11 libxkbcommon fontconfig
+cargo build --release
 ```
 
 ### 2. 首次运行
@@ -54,15 +64,24 @@ cc-swap/
     └── glm-coding-plan.json
 ```
 
-### 4. 日常使用
+### 4. 使用
 
-双击运行 → 看到每份配置对应一个按钮 → 点击 → 状态栏显示「已切换到 xxx」→ 窗口约 500 ms 后自动关闭。
+双击运行，可以看到每份配置对应一个按钮。  
+点击要切换的配置文件 → 状态栏显示「已切换到 xxx」→ 窗口约 500 ms 后自动关闭。
 
 每次切换前，旧的目标 `settings.json` 会被复制为 `settings.json.bak`（与目标同目录，覆盖式保留最近一次，方便误操作时恢复）。
 
-### 5. 修改目标路径
+### 修改目标路径
 
 需要换目标时，直接编辑程序同级的 `cc-swap.conf`，把里面那一行路径改成新的目标即可。
+
+示例 `cc-swap.conf`：
+
+```
+/home/user/.claude/settings.json
+```
+
+> 只有一行纯文本，指向你要替换的目标配置文件。默认值是 `~/.claude/settings.json`（Windows 为 `%USERPROFILE%\.claude\settings.json`）。
 
 ## 工作原理
 
