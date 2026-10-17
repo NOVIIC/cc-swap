@@ -127,10 +127,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .map(Path::to_path_buf)
             .unwrap_or_else(|| target_for_open.clone());
         let _ = std::fs::create_dir_all(&dir);
-        if let Err(e) = open_folder(&dir) {
-            if let Some(ui) = ui_weak.upgrade() {
-                ui.set_status(format!("打开文件夹失败: {}", e).into());
-            }
+        if let Err(e) = open_folder(&dir)
+            && let Some(ui) = ui_weak.upgrade()
+        {
+            ui.set_status(format!("打开文件夹失败: {}", e).into());
         }
     });
 
