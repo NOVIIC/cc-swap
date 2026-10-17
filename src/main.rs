@@ -58,6 +58,29 @@ fn scan_settings() -> Vec<PathBuf> {
     v
 }
 
+fn open_folder(dir: &Path) -> std::io::Result<()> {
+    let dir = dir.display().to_string();
+    #[cfg(target_os = "windows")]
+    let mut cmd = {
+        let mut c = std::process::Command::new("explorer");
+        c.arg(dir);
+        c
+    };
+    #[cfg(target_os = "macos")]
+    let mut cmd = {
+        let mut c = std::process::Command::new("open");
+        c.arg(dir);
+        c
+    };
+    #[cfg(all(unix, not(target_os = "macos")))]
+    let mut cmd = {
+        let mut c = std::process::Command::new("xdg-open");
+        c.arg(dir);
+        c
+    };
+    cmd.spawn().map(|_| ())
+}
+
 fn switch_profile(target: &Path, src: &Path) -> std::io::Result<()> {
     if let Some(parent) = target.parent() {
         std::fs::create_dir_all(parent)?;
@@ -95,6 +118,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     ui.set_target_path(target.display().to_string().into());
     ui.set_version(env!("CARGO_PKG_VERSION").into());
     ui.set_profiles(ModelRc::from(Rc::new(VecModel::from(names))));
+
+    let target_for_open = target.clone();
+    let ui_weak = ui.as_weak();
+    ui.on_target_clicked(move || {
+        let dir = target_for_open
+            .parent()
+            .map(Path::to_path_buf)
+            .unwrap_or_else(|| target_for_open.clone());
+        let _ = std::fs::create_dir_all(&dir);
+        if let Err(e) = open_folder(&dir) {
+            if let Some(ui) = ui_weak.upgrade() {
+                ui.set_status(format!("打开文件夹失败: {}", e).into());
+            }
+        }
+    });
 
     let ui_weak = ui.as_weak();
     ui.on_profile_clicked(move |idx| {
