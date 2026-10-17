@@ -13,16 +13,27 @@ export component AppWindow inherits Window {
     in-out property <string> status;
 
     callback profile-clicked(int);
+    callback target-clicked();
 
     VerticalBox {
         padding: 12px;
         spacing: 8px;
 
-        Text {
-            text: "目标: " + root.target-path;
-            font-size: 11px;
-            color: #888888;
-            wrap: word-wrap;
+        Rectangle {
+            background: transparent;
+            height: target-text.preferred-height;
+
+            target-text := Text {
+                text: "目标: " + root.target-path;
+                font-size: 11px;
+                color: #888888;
+                wrap: word-wrap;
+            }
+
+            TouchArea {
+                mouse-cursor: pointer;
+                clicked => { root.target-clicked(); }
+            }
         }
 
         Rectangle {
