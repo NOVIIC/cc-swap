@@ -14,6 +14,7 @@ export component AppWindow inherits Window {
 
     callback profile-clicked(int);
     callback target-clicked();
+    callback open-config-folder();
 
     VerticalBox {
         padding: 12px;
@@ -58,6 +59,11 @@ export component AppWindow inherits Window {
                     clicked => { root.profile-clicked(idx); }
                 }
             }
+        }
+
+        Button {
+            text: "打开配置文件夹";
+            clicked => { root.open-config-folder(); }
         }
 
         Text {
