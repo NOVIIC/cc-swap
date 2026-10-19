@@ -135,6 +135,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     });
 
     let ui_weak = ui.as_weak();
+    ui.on_open_config_folder(move || {
+        let dir = settings_dir();
+        let _ = std::fs::create_dir_all(&dir);
+        if let Err(e) = open_folder(&dir)
+            && let Some(ui) = ui_weak.upgrade()
+        {
+            ui.set_status(format!("打开文件夹失败: {}", e).into());
+        }
+    });
+
+    let ui_weak = ui.as_weak();
     ui.on_profile_clicked(move |idx| {
         let Some(src) = files.get(idx as usize) else {
             return;
